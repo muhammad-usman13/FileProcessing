@@ -1,7 +1,7 @@
 import sys
 import time
 from multiprocessing import Process, Manager
-
+from threading import Thread
 def processFile(data, results):
     vovels = chars = spaces = punchs = 0
 
@@ -24,30 +24,43 @@ if __name__ == "__main__":
         data = file.read()
 
     # Create partitions
-    data1 = data[:len(data)//2]
-    data2 = data[len(data)//2:]
+    data1 = data[:len(data)//6]
+    data2 = data[len(data)//6:len(data)//3]
+    data3 = data[len(data)//3:len(data)//2]
+    data4 = data[len(data)//2:len(data)*4//6]
+    data5 = data[len(data)*4//6:len(data)*5//6]
+    data6 = data[len(data)*5//6:]
+    # data3 = data[]
 
     start = time.time()
 
     # Using multiprocessing
     with Manager() as manager:
-        results = manager.list()
+        results = []
 
-        p1 = Process(target=processFile, args=(data1, results))
-        p2 = Process(target=processFile, args=(data2, results))
+        p1 = Thread(target=processFile, args=(data1, results))
+        p2 = Thread(target=processFile, args=(data2, results))
+        p3 = Thread(target=processFile, args=(data3, results))
+        p4 = Thread(target=processFile, args=(data4, results))
+        
 
         p1.start()
         p2.start()
+        p3.start()
+        p4.start()
 
         p1.join()
         p2.join()
+        p3.join()
+        p4.join()
 
         # Aggregate results
         total_chars = sum(r[0] for r in results)
         total_spaces = sum(r[1] for r in results)
         total_punchs = sum(r[2] for r in results)
         total_vovels = sum(r[3] for r in results)
-
+        print(type(results), results)
+        
         print("Total Characters:", total_chars)
         print("Spaces:", total_spaces)
         print("Punctuation:", total_punchs)
